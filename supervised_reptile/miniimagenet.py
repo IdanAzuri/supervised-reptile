@@ -10,8 +10,9 @@ sub-directory per WordNet ID.
 import os
 import random
 
-from PIL import Image
+from PIL import Image, ImageFile
 import numpy as np
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def read_dataset(data_dir):
     """
