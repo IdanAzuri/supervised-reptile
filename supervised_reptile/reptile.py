@@ -55,11 +55,11 @@ class Reptile:
 			mini_dataset = _sample_mini_dataset_force_1class(dataset, num_shots,num_classes)
 			for batch in _mini_batches(mini_dataset, inner_batch_size, inner_iters, replacement):
 				inputs, labels = zip(*batch)
-				images_aug = self.aug.seq.augment_images(inputs)
+				# images_aug = self.aug.seq.augment_images(inputs)
 				# show_images(images_aug ,labels)
 				if self._pre_step_op:
 					self.session.run(self._pre_step_op)
-				self.session.run(minimize_op, feed_dict={input_ph: images_aug, label_ph: labels})
+				self.session.run(minimize_op, feed_dict={input_ph: inputs, label_ph: labels})
 			new_vars.append(self._model_state.export_variables())
 			self._model_state.import_variables(old_vars)
 		new_vars = average_vars(new_vars)
