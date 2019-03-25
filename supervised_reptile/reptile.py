@@ -7,6 +7,7 @@ import random
 
 import tensorflow as tf
 
+from supervised_reptile.imge_aug_utils import ImgAugTransform
 from .variables import (interpolate_vars, average_vars, subtract_vars, add_vars, scale_vars, VariableState)
 
 
@@ -26,7 +27,7 @@ class Reptile:
 		self._full_state = VariableState(self.session, tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
 		self._transductive = transductive
 		self._pre_step_op = pre_step_op
-	
+		self.aug = ImgAugTransform()
 	# pylint: disable=R0913,R0914
 	def train_step(self, dataset, input_ph, label_ph, minimize_op, num_classes, num_shots, inner_batch_size, inner_iters, replacement, meta_step_size, meta_batch_size):
 		"""
@@ -54,9 +55,11 @@ class Reptile:
 			mini_dataset = _sample_mini_dataset_force_1class(dataset, num_shots,num_classes)
 			for batch in _mini_batches(mini_dataset, inner_batch_size, inner_iters, replacement):
 				inputs, labels = zip(*batch)
+				images_aug = self.aug.seq.augment_images(inputs)
+				# show_images(images_aug ,labels)
 				if self._pre_step_op:
 					self.session.run(self._pre_step_op)
-				self.session.run(minimize_op, feed_dict={input_ph: inputs, label_ph: labels})
+				self.session.run(minimize_op, feed_dict={input_ph: images_aug, label_ph: labels})
 			new_vars.append(self._model_state.export_variables())
 			self._model_state.import_variables(old_vars)
 		new_vars = average_vars(new_vars)
@@ -259,4 +262,14 @@ def _sample_mini_dataset_force_1class(dataset, num_shots, num_classes):
 	for i in range(num_classes):
 		for sample in shuffled[0].sample(num_shots):
 			yield (sample, i)
-
+	
+def show_images(inputs, labels):
+	import matplotlib.pyplot as plt
+	fig = plt.figure(figsize=(10, 10))
+	columns = 5
+	rows = 1
+	for i in range(1, columns * rows):
+		ax = fig.add_subplot(rows, columns, i)
+		ax.set_title(labels[i])
+		plt.imshow(inputs[i])
+	plt.show()
