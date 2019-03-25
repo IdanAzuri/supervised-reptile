@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --mem=8g
-#SBATCH -c 8
-#SBATCH --gres=gpu:m60:1
+#SBATCH --mem=2g
+#SBATCH -c 2
+#SBATCH --gres=gpu:m60:2
 #SBATCH --time=1-20
 #SBATCH --mail-user=idan.azuri@mail.huji.ac.il
 #SBATCH --mail-type=END,FAIL,TIME_LIMIT
