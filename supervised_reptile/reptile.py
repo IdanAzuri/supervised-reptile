@@ -52,7 +52,7 @@ class Reptile:
 		old_vars = self._model_state.export_variables()
 		new_vars = []
 		for _ in range(meta_batch_size):
-			mini_dataset = _sample_mini_dataset(dataset, num_classes, num_shots)
+			mini_dataset = _sample_mini_dataset_force_1class(dataset, num_shots)
 			for batch in _mini_batches(mini_dataset, inner_batch_size, inner_iters, replacement):
 				inputs, labels = zip(*batch)
 				# images_aug = self.aug.seq.augment_images(inputs)
@@ -249,7 +249,21 @@ def _split_train_test(samples, test_shots=1):
 	return train_set, test_set
 
 
-def _sample_mini_dataset_force_1class(dataset, num_shots, num_classes):
+def _sample_mini_dataset_force_1class(dataset, num_shots):
+	"""
+	Sample a few shot task from a dataset.
+
+	Returns:
+	  An iterable of (input, label) pairs.
+	"""
+	shuffled = list(dataset)
+	random.shuffle(shuffled)
+	shuffled = random.choices(shuffled, k=1)
+	for i in range(1):
+		for sample in shuffled[0].sample(num_shots):
+			yield (sample, i)
+
+def _sample_mini_dataset_with_replacements(dataset, num_classes, num_shots):
 	"""
 	Sample a few shot task from a dataset.
 
@@ -259,10 +273,12 @@ def _sample_mini_dataset_force_1class(dataset, num_shots, num_classes):
 	shuffled = list(dataset)
 	random.shuffle(shuffled)
 	shuffled = random.choices(shuffled, k=num_classes)
-	for i in range(num_classes):
-		for sample in shuffled[0].sample(num_shots):
-			yield (sample, i)
-	
+	for class_idx, class_obj in enumerate(shuffled):
+		for sample in class_obj.sample(num_shots):
+			yield (sample, class_idx)
+
+
+
 def show_images(inputs, labels):
 	import matplotlib.pyplot as plt
 	fig = plt.figure(figsize=(10, 10))
