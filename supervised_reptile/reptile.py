@@ -9,7 +9,7 @@ import tensorflow as tf
 
 from supervised_reptile.imge_aug_utils import ImgAugTransform
 from .variables import (interpolate_vars, average_vars, subtract_vars, add_vars, scale_vars, VariableState)
-
+import numpy as np
 
 class Reptile:
 	"""
@@ -52,7 +52,7 @@ class Reptile:
 		old_vars = self._model_state.export_variables()
 		new_vars = []
 		for _ in range(meta_batch_size):
-			mini_dataset = _sample_mini_dataset_force_1class(dataset, num_shots)
+			mini_dataset = _sample_mini_dataset(dataset, num_shots=num_shots,num_classes=num_classes)
 			for batch in _mini_batches(mini_dataset, inner_batch_size, inner_iters, replacement):
 				inputs, labels = zip(*batch)
 				# images_aug = self.aug.seq.augment_images(inputs)
@@ -65,7 +65,7 @@ class Reptile:
 		new_vars = average_vars(new_vars)
 		self._model_state.import_variables(interpolate_vars(old_vars, new_vars, meta_step_size))
 	
-	def evaluate(self, dataset, input_ph, label_ph, minimize_op, predictions, num_classes, num_shots, inner_batch_size, inner_iters, replacement):
+	def evaluate(self, dataset, input_ph, label_ph, minimize_op, predictions, num_classes, num_shots, inner_batch_size, inner_iters, replacement, augment):
 		"""
 		Run a single evaluation of the model.
 
@@ -93,15 +93,27 @@ class Reptile:
 		"""
 		train_set, test_set = _split_train_test(_sample_mini_dataset(dataset, num_classes, num_shots + 1))
 		old_vars = self._full_state.export_variables()
+		
 		for batch in _mini_batches(train_set, inner_batch_size, inner_iters, replacement):
-			inputs, labels = zip(*batch)
-			if self._pre_step_op:
-				self.session.run(self._pre_step_op)
-			self.session.run(minimize_op, feed_dict={input_ph: inputs, label_ph: labels})
+			if augment is not None:
+				self.train_augmetation(self.aug, batch, input_ph, label_ph, minimize_op)
+			else:
+				inputs, labels = zip(*batch)
+				if self._pre_step_op:
+					self.session.run(self._pre_step_op)
+				self.session.run(minimize_op, feed_dict={input_ph: inputs, label_ph: labels})
 		test_preds = self._test_predictions(train_set, test_set, input_ph, predictions)
 		num_correct = sum([pred == sample[1] for pred, sample in zip(test_preds, test_set)])
 		self._full_state.import_variables(old_vars)
 		return num_correct
+	
+	def train_augmetation(self, augment, batch, input_ph, label_ph, minimize_op):
+		for _ in range(10):
+			inputs, labels = zip(*batch)
+			augmented_images= augment(inputs)
+			if self._pre_step_op:
+				self.session.run(self._pre_step_op)
+			self.session.run(minimize_op, feed_dict={input_ph: np.asarray(augmented_images).reshape([-1,84,84,3]), label_ph: labels})
 	
 	def _test_predictions(self, train_set, test_set, input_ph, predictions):
 		if self._transductive:

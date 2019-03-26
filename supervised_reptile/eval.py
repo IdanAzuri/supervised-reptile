@@ -17,7 +17,8 @@ def evaluate(sess,
              num_samples=10000,
              transductive=False,
              weight_decay_rate=1,
-             reptile_fn=Reptile):
+             reptile_fn=Reptile,
+             augment=False):
     """
     Evaluate a model on a dataset.
     """
@@ -30,5 +31,5 @@ def evaluate(sess,
                                           model.minimize_op, model.predictions,
                                           num_classes=num_classes, num_shots=num_shots,
                                           inner_batch_size=eval_inner_batch_size,
-                                          inner_iters=eval_inner_iters, replacement=replacement)
+                                          inner_iters=eval_inner_iters, replacement=replacement,augment=augment)
     return total_correct / (num_samples * num_classes)

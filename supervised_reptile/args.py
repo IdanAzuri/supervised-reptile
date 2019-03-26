@@ -40,6 +40,7 @@ def argument_parser():
     parser.add_argument('--foml-tail', help='number of shots for the final mini-batch in FOML',
                         default=None, type=int)
     parser.add_argument('--sgd', help='use vanilla SGD instead of Adam', action='store_true')
+    parser.add_argument('--augment', help='bool',action='store_true', default=False)
     return parser
 
 def model_kwargs(parsed_args):
@@ -90,8 +91,9 @@ def evaluate_kwargs(parsed_args):
         'weight_decay_rate': parsed_args.weight_decay,
         'num_samples': parsed_args.eval_samples,
         'transductive': parsed_args.transductive,
-        'reptile_fn': _args_reptile(parsed_args)
-    }
+        'reptile_fn': _args_reptile(parsed_args),
+        'augment': parsed_args.augment
+        }
 
 def _args_reptile(parsed_args):
     if parsed_args.foml:

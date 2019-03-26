@@ -15,7 +15,7 @@ class ImgAugTransform:
 		# 	])
 		# Sometimes(0.5, ...) applies the given augmenter in 50% of all cases,
 		# e.g. Sometimes(0.5, GaussianBlur(0.3)) would blur roughly every second image.
-		sometimes = lambda aug: iaa.Sometimes(0.2, aug)
+		sometimes = lambda aug: iaa.Sometimes(0.5, aug)
 		
 		# Define our sequence of augmentation steps that will be applied to every image
 		# All augmenters with per_channel=0.5 will sample one value _per image_
@@ -64,7 +64,7 @@ class ImgAugTransform:
 	
 	def __call__(self, img):
 		img = np.array(img)
-		return self.seq.augment_image(img)
+		return self.seq.augment_images(img)
 		
 
 	

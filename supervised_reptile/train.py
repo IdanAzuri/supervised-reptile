@@ -33,6 +33,7 @@ def train(sess,
           train_shots=None,
           transductive=False,
           reptile_fn=Reptile,
+          aug=False,
           log_fn=print):
     """
     Train a model on a dataset.
@@ -65,7 +66,7 @@ def train(sess,
                                            model.minimize_op, model.predictions,
                                            num_classes=num_classes, num_shots=num_shots,
                                            inner_batch_size=eval_inner_batch_size,
-                                           inner_iters=eval_inner_iters, replacement=replacement)
+                                           inner_iters=eval_inner_iters, replacement=replacement,augment=None)
                 summary = sess.run(merged, feed_dict={accuracy_ph: correct/num_classes})
                 writer.add_summary(summary, i)
                 writer.flush()
