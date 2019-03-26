@@ -12,7 +12,7 @@ import random
 
 from PIL import Image, ImageFile
 import numpy as np
-ImageFile.LOAD_TRUNCATED_IMAGES = True
+# ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def read_dataset(data_dir):
     """
