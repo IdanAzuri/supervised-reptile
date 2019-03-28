@@ -52,7 +52,7 @@ class Reptile:
 		old_vars = self._model_state.export_variables()
 		new_vars = []
 		for _ in range(meta_batch_size):
-			mini_dataset = _sample_mini_dataset(dataset, num_shots=num_shots,num_classes=num_classes)
+			mini_dataset = _sample_mini_dataset_with_replacements(dataset, num_shots=num_shots,num_classes=num_classes)
 			for batch in _mini_batches(mini_dataset, inner_batch_size, inner_iters, replacement):
 				inputs, labels = zip(*batch)
 				# images_aug = self.aug.seq.augment_images(inputs)
@@ -173,7 +173,7 @@ class FOML(Reptile):
 		old_vars = self._model_state.export_variables()
 		updates = []
 		for _ in range(meta_batch_size):
-			mini_dataset = _sample_mini_dataset(dataset, num_classes, num_shots)
+			mini_dataset = _sample_mini_dataset_with_replacements(dataset, num_classes, num_shots)
 			mini_batches = self._mini_batches(mini_dataset, inner_batch_size, inner_iters, replacement)
 			for batch in mini_batches:
 				inputs, labels = zip(*batch)
@@ -293,10 +293,10 @@ def _sample_mini_dataset_with_replacements(dataset, num_classes, num_shots):
 	"""
 	shuffled = list(dataset)
 	random.shuffle(shuffled)
-	shuffled = random.choices(shuffled, k=num_classes)
+	shuffled = random.choices(shuffled, k=num_classes*num_shots)
 	for class_idx, class_obj in enumerate(shuffled):
-		for sample in class_obj.sample(num_shots):
-			yield (sample, class_idx)
+		for sample in class_obj.sample(1):
+			yield (sample, class_idx%num_classes)
 
 
 
