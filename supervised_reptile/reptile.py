@@ -108,12 +108,21 @@ class Reptile:
 		return num_correct
 	
 	def train_augmetation(self, augment, batch, input_ph, label_ph, minimize_op):
-		for _ in range(10):
+		augmented_images=[]
+		augmented_labels=[]
+		for _ in range(3):
 			inputs, labels = zip(*batch)
-			augmented_images= augment(inputs)
-			if self._pre_step_op:
-				self.session.run(self._pre_step_op)
-			self.session.run(minimize_op, feed_dict={input_ph: np.asarray(augmented_images).reshape([-1,84,84,3]), label_ph: labels})
+			if _ == 0:
+				augmented_images.append(inputs)
+				augmented_labels.append(labels)
+			augmented_images.append(augment(inputs))
+			augmented_labels.append(labels)
+		augmented_labels=np.asarray(augmented_labels).flatten(order='C')
+		augmented_images=np.asarray(augmented_images).reshape([-1,84,84,3])
+		# show_images(augmented_images,augmented_labels)
+		if self._pre_step_op:
+			self.session.run(self._pre_step_op)
+		self.session.run(minimize_op, feed_dict={input_ph: augmented_images, label_ph: augmented_labels})
 	
 	def _test_predictions(self, train_set, test_set, input_ph, predictions):
 		if self._transductive:
@@ -294,10 +303,10 @@ def _sample_mini_dataset_with_replacements(dataset, num_classes, num_shots):
 def show_images(inputs, labels):
 	import matplotlib.pyplot as plt
 	fig = plt.figure(figsize=(10, 10))
-	columns = 5
-	rows = 1
-	for i in range(1, columns * rows):
-		ax = fig.add_subplot(rows, columns, i)
+	columns = len(labels)//4
+	rows = 4
+	for i in range(0, columns * rows):
+		ax = fig.add_subplot(rows, columns, i+1)
 		ax.set_title(labels[i])
 		plt.imshow(inputs[i])
 	plt.show()

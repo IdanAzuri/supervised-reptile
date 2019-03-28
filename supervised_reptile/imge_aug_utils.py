@@ -46,8 +46,8 @@ class ImgAugTransform:
 			                    # blend the result with the original image using a blobby mask
 			                    # iaa.SimplexNoiseAlpha(iaa.OneOf([iaa.EdgeDetect(alpha=(0.5, 1.0)), iaa.DirectedEdgeDetect(alpha=(0.5, 1.0), direction=(0.0, 1.0)), ])),
 			                    # iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, 0.05 * 255), per_channel=0.5),  # add gaussian noise to images
-			                    iaa.OneOf([iaa.Dropout((0.01, 0.1), per_channel=0.5),  # randomly remove up to 10% of the pixels
-			                               iaa.CoarseDropout((0.03, 0.15), size_percent=(0.02, 0.05), per_channel=0.2), ]),
+			                    iaa.OneOf([iaa.Dropout((0.01, 0.1), per_channel=0.3),  # randomly remove up to 10% of the pixels
+			                               iaa.CoarseDropout((0.03, 0.10), size_percent=(0.02, 0.05), per_channel=0.2), ]),
 			                    #iaa.Invert(0.05, per_channel=True),
 			                    # invert color channels
 			                    # iaa.Add((-10, 10), per_channel=0.5),  # change brightness of images (by -10 to 10 of original value)
